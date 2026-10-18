@@ -196,7 +196,7 @@
     const trail = (x, y) => { const d = Math.hypot(x - lx, y - ly); if (d > 14) { add(x, y, d > 40 ? 2 : 1, 0.6); lx = x; ly = y; } };
     if (finePointer) addEventListener("pointermove", e => trail(e.clientX, e.clientY), { passive: true });
     addEventListener("touchmove", e => { const t = e.touches[0]; if (t) trail(t.clientX, t.clientY); }, { passive: true });
-    document.addEventListener("click", e => { if (e.target.closest(".btn, .finder__opt, .map-pin, .chip, .menu__tab")) add(e.clientX, e.clientY, 18, 2.2); });
+    document.addEventListener("click", e => { if (e.target.closest(".btn, .finder__opt, .map-pin, .chip, .menu-item__add")) add(e.clientX, e.clientY, 18, 2.2); });
     return { burst: (x, y, n = 18) => add(x, y, n, 2.2) };
   })();
 
@@ -487,32 +487,21 @@
   }
 
   /* ------------------------------------------------------------------------
-     The Menu (catalogue tabs)
+     The Menu (services)
      ------------------------------------------------------------------------ */
-  const tabs = $("[data-menu-tabs]"), panel = $("[data-menu-panel]");
-  if (tabs && panel && window.MENU) {
-    const cur = SITE.currency || "K";
-    function showCat(cat) {
-      $$(".menu__tab", tabs).forEach(t => t.setAttribute("aria-selected", String(t.dataset.cat === cat.id)));
-      panel.innerHTML = cat.items.map((it, i) => `
-        <article class="menu-item" style="animation-delay:${i * 0.07}s">
-          <h3>${it.name}</h3>
-          <div class="menu-item__price"><small>from</small>${cur}${it.from}</div>
-          <p>${it.desc}</p>
-          <div class="menu-item__meta"><span>⏱ ${it.time}</span><button type="button" class="menu-item__add" data-pick="${it.name}">Book this</button></div>
-        </article>`).join("");
-      $$(".menu-item", panel).forEach(el => el.addEventListener("pointermove", e => {
-        const r = el.getBoundingClientRect();
-        el.style.setProperty("--mx", `${e.clientX - r.left}px`); el.style.setProperty("--my", `${e.clientY - r.top}px`);
-      }));
-    }
-    window.MENU.forEach((cat, i) => {
-      const b = document.createElement("button");
-      b.type = "button"; b.className = "menu__tab"; b.textContent = cat.label; b.dataset.cat = cat.id; b.setAttribute("role", "tab");
-      b.addEventListener("click", () => { showCat(cat); Haptics.fire("light"); b.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" }); });
-      tabs.append(b);
-      if (i === 0) showCat(cat);
-    });
+  const panel = $("[data-menu-panel]");
+  if (panel && window.MENU) {
+    panel.innerHTML = window.MENU.map((it, i) => `
+      <article class="menu-item" style="animation-delay:${i * 0.07}s">
+        <h3>${it.name}</h3>
+        <div class="menu-item__price">${it.from != null ? `<small>from</small>K${it.from}` : `<small>price</small>On quote`}</div>
+        <p>${it.desc}</p>
+        <div class="menu-item__meta"><span>${it.group}</span><button type="button" class="menu-item__add" data-pick="${it.name}">Book this</button></div>
+      </article>`).join("");
+    $$(".menu-item", panel).forEach(el => el.addEventListener("pointermove", e => {
+      const r = el.getBoundingClientRect();
+      el.style.setProperty("--mx", `${e.clientX - r.left}px`); el.style.setProperty("--my", `${e.clientY - r.top}px`);
+    }));
     panel.addEventListener("click", e => {
       const b = e.target.closest("[data-pick]");
       if (!b) return;
@@ -570,7 +559,10 @@
   const mapStage = $("[data-map-stage]");
   if (mapStage && window.ZAMBIA && window.CITIES) {
     const Z = window.ZAMBIA, plane = $("[data-map-plane]"), svg = $("[data-map-svg]");
-    const studio = window.CITIES.find(c => c.name === SITE.studioCity) || window.CITIES[0];
+    const base = SITE.baseProvince || "Central Province";
+    const isHome = c => c.region === base;
+    // distances are measured from the first town in the home province (Kabwe)
+    const hub = window.CITIES.find(isHome) || window.CITIES[0];
     const KM_PER_UNIT = 1.262; // map is 1000 units ≈ 1,262 km wide
     svg.setAttribute("viewBox", `0 0 ${Z.w} ${Z.h}`);
     const gridLines = [];
@@ -602,10 +594,10 @@
     window.CITIES.forEach(c => {
       const b = document.createElement("button");
       b.type = "button";
-      b.className = "map-pin" + (c === studio ? " is-studio" : "");
+      b.className = "map-pin" + (isHome(c) ? " is-home" : "");
       b.style.left = `${(c.x / Z.w) * 100}%`; b.style.top = `${(c.y / Z.h) * 100}%`;
       b.setAttribute("aria-label", c.name);
-      b.innerHTML = `<span class="map-pin__base"></span><span class="map-pin__stand"><span class="map-pin__label">${c === studio ? "★ " : ""}${c.name}</span><span class="map-pin__stick"></span></span>`;
+      b.innerHTML = `<span class="map-pin__base"></span><span class="map-pin__stand"><span class="map-pin__label">${isHome(c) ? "★ " : ""}${c.name}</span><span class="map-pin__stick"></span></span>`;
       // Copperbelt towns sit close together, so a tap picks whichever pin is nearest the finger
       b.addEventListener("click", e => {
         if (!e.detail) return select(c, b); // keyboard
@@ -626,21 +618,21 @@
       Haptics.fire("medium");
       card.city.textContent = c.name;
       card.region.textContent = c.region;
-      if (c === studio) {
-        card.copy.textContent = `Wiza's studio is in ${c.name}. Come in for your appointment, or ask about a home visit nearby.`;
+      if (isHome(c)) {
+        card.copy.textContent = `${c.name} is in ${base}, Wiza's home area. Request your date and Wiza will confirm it with you on WhatsApp.`;
         route.setAttribute("d", "");
       } else {
-        const km = Math.round(Math.hypot(c.x - studio.x, c.y - studio.y) * KM_PER_UNIT / 10) * 10;
-        card.copy.textContent = `About ${km} km from the studio in ${studio.name}. Clients from ${c.name} book ahead and travel in, and travel bookings for bridal parties and groups can be arranged.`;
-        const mx = (c.x + studio.x) / 2, my = (c.y + studio.y) / 2 - Math.hypot(c.x - studio.x, c.y - studio.y) * 0.3;
-        route.setAttribute("d", `M${studio.x},${studio.y} Q${mx},${my} ${c.x},${c.y}`);
+        const km = Math.round(Math.hypot(c.x - hub.x, c.y - hub.y) * KM_PER_UNIT / 10) * 10;
+        card.copy.textContent = `About ${km} km from ${base}. Bookings in ${c.name} are welcome. Transport-related costs will reflect in your final bill.`;
+        const mx = (c.x + hub.x) / 2, my = (c.y + hub.y) / 2 - Math.hypot(c.x - hub.x, c.y - hub.y) * 0.3;
+        route.setAttribute("d", `M${hub.x},${hub.y} Q${mx},${my} ${c.x},${c.y}`);
       }
       card.book.dataset.town = c.name;
       // nudge the camera towards the selected town
       target.rz = -8 + ((c.x / Z.w) - 0.5) * -14;
       target.rx = 34 + ((c.y / Z.h) - 0.5) * 10;
     }
-    card.book.addEventListener("click", () => Booking?.setTown(card.book.dataset.town || studio.name));
+    card.book.addEventListener("click", () => Booking?.setTown(card.book.dataset.town || hub.name));
 
     // camera: drag to rotate, gyro adds a gentle tilt; children counter-rotate to stand upright
     const target = { rx: 38, rz: -8 }, cam = { rx: 38, rz: -8 };
@@ -671,7 +663,7 @@
       plane.style.setProperty("--rz", `${cam.rz}deg`);
     })();
 
-    select(studio, studio._el);
+    select(hub, hub._el);
   }
 
   /* ------------------------------------------------------------------------
@@ -686,10 +678,10 @@
 
     styleSel.innerHTML = `<option value="">Choose a style…</option>` +
       `<optgroup label="From the lookbook" data-look-group></optgroup>` +
-      (window.MENU || []).map(c => `<optgroup label="${c.label}">${c.items.map(i => `<option>${i.name}</option>`).join("")}</optgroup>`).join("") +
+      `<optgroup label="Services">${(window.MENU || []).map(i => `<option>${i.name}</option>`).join("")}</optgroup>` +
       `<option>Not sure yet: help me choose</option>`;
     $("[data-look-group]", styleSel).innerHTML = LOOKS.map(l => `<option value="look:${l.id}">${l.title}</option>`).join("");
-    townSel.innerHTML = (window.CITIES || []).map(c => `<option${c.name === SITE.studioCity ? " selected" : ""}>${c.name}</option>`).join("") + `<option>Elsewhere in Zambia</option>`;
+    townSel.innerHTML = (window.CITIES || []).map(c => `<option>${c.name}</option>`).join("") + `<option>Elsewhere in Zambia</option>`;
     const dateIn = form.elements.date;
     dateIn.min = new Date(Date.now() - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
 
@@ -732,17 +724,24 @@
         if (empty && !bad) bad = el;
       }
       if (bad) { msg.textContent = "Please add your name, style and date."; Haptics.fire("error"); bad.focus(); return; }
+      const consent = f.agree.closest(".consent");
+      consent.classList.toggle("is-error", !f.agree.checked);
+      if (!f.agree.checked) { msg.textContent = "Please tick the box to agree to the booking terms."; Haptics.fire("error"); f.agree.focus(); return; }
       const style = chosenLook ? `${chosenLook.title} (from the lookbook)` : f.style.value;
       const date = new Date(f.date.value + "T12:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+      const home = (window.CITIES || []).some(c => c.name === f.town.value && c.region === (SITE.baseProvince || "Central Province"));
       const text = [
-        `Hello Wiza! ✨ I'd love to book an appointment.`,
+        `Hello Wiza! ✨ I'd love to request an appointment.`,
         ``,
         `• Name: ${f.name.value.trim()}`,
         `• Style: ${style}`,
         `• Date: ${date}, ${f.time.value}`,
         `• Town: ${f.town.value}`,
         f.notes.value.trim() ? `• Notes: ${f.notes.value.trim()}` : "",
-      ].filter(Boolean).join("\n");
+        ``,
+        `I understand a ${SITE.depositPercent || 25}% upfront payment secures my appointment once you confirm.`,
+        home ? "" : `I'm outside ${SITE.baseProvince || "Central Province"}, so I understand transport costs will be added to the final bill.`,
+      ].filter((l, i, a) => l || (i > 0 && a[i - 1])).join("\n").trim();
       if (!whatsappReady()) {
         msg.textContent = "Online booking opens soon. The WhatsApp number hasn't been added yet.";
         console.info("[Braids by Wiza] Set SITE.whatsapp in js/data.js. Message would be:\n" + text);
@@ -763,7 +762,9 @@
   $$("[data-socials]").forEach(el => {
     const links = [];
     if (whatsappReady()) links.push(`<a href="https://wa.me/${SITE.whatsapp}" target="_blank" rel="noopener">WhatsApp</a>`);
+    if (SITE.phone) links.push(`<a href="tel:+${SITE.phone}">Call</a>`);
     if (SITE.instagram) links.push(`<a href="https://instagram.com/${SITE.instagram}" target="_blank" rel="noopener">Instagram</a>`);
+    else links.push(`<span class="soon">Instagram · coming soon</span>`);
     if (SITE.tiktok) links.push(`<a href="https://tiktok.com/@${SITE.tiktok}" target="_blank" rel="noopener">TikTok</a>`);
     if (SITE.email) links.push(`<a href="mailto:${SITE.email}">Email</a>`);
     if (!links.length) links.push(`<a href="index.html#book">Book</a>`, `<a href="work.html">Lookbook</a>`);

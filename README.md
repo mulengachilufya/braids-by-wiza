@@ -8,12 +8,12 @@ A static site with no build step and no dependencies: open `index.html`, or depl
 - `index.html`: home page. It has the interactive silk hero, signature work, the menu, the style finder, About Wiza, a 3D Zambia map, aftercare, FAQ, and WhatsApp booking.
 - `work.html`: the Lookbook, with all of Wiza's work, filters, and a swipeable lightbox.
 
-## Before going live (edit `js/data.js`)
-- [ ] `whatsapp`: Wiza's number, digits only, e.g. `260971234567`. Booking stays disabled until it is set.
-- [ ] `instagram` / `tiktok` / `email`: her handles (optional).
-- [ ] `studioCity`: the studio town shown on the map (currently `Lusaka`).
-- [ ] **Prices in `MENU` are placeholders.** Replace them with real prices.
-- [ ] Check the look names and descriptions in `LOOKS`.
+## Business details (edit `js/data.js`)
+- WhatsApp: +260 760 877 104 · Calls only: +260 777 091 604
+- Based in Central Province. Transport costs apply outside the province.
+- By appointment only. A 25% upfront payment secures a booking.
+- [ ] Prices: services show "On quote" until you set `from` on each `MENU` item (e.g. `from: 450`).
+- [ ] Instagram: set `instagram` once the account exists (the footer says "coming soon" until then).
 
 ## Adding new work
 1. Cut the photo out onto a white background and export a ~900px-wide `.webp` into `assets/work/`.
