@@ -593,3 +593,11 @@ body:not(.is-loading) .loader { clip-path: inset(0 0 100% 0); visibility: hidden
 .book__contact small, .book__chosen small, .book__estimate small { font-size: .75rem; color: var(--gold); }
 .book__estimate small { color: var(--pink-deep); }
 .drawer__foot { font-family: var(--f-body); font-size: 1rem; color: var(--gold); }
+
+/* ---------- Send a message ---------- */
+.message { background: var(--ink); border-top: 1px solid var(--line); }
+.message__grid { display: grid; gap: 2.4rem; max-width: 1200px; margin: 0 auto; }
+@media (min-width: 900px) { .message__grid { grid-template-columns: 1fr 1.1fr; align-items: start; } }
+.message__intro p { color: rgba(255,250,252,.75); max-width: 40ch; }
+.message__form { background: var(--porcelain); color: var(--ink); border-radius: calc(var(--r) * 1.4); padding: clamp(1.4rem, 5vw, 2.6rem); display: grid; gap: 1.1rem; }
+.form-msg.is-ok { color: #2f7a4f; }

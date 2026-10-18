@@ -672,6 +672,17 @@
   }
 
   /* ------------------------------------------------------------------------
+     Keep a copy of every request in Netlify Forms (Wiza can get them by email
+     too). WhatsApp is still the main channel; this never blocks it.
+     ------------------------------------------------------------------------ */
+  function saveCopy(formEl) {
+    try {
+      const body = new URLSearchParams(new FormData(formEl)).toString();
+      fetch("/", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body, keepalive: true }).catch(() => {});
+    } catch { /* offline or unsupported */ }
+  }
+
+  /* ------------------------------------------------------------------------
      Booking → WhatsApp
      ------------------------------------------------------------------------ */
   var Booking = null;
@@ -758,12 +769,46 @@
         console.info("[Braids by Wiza] Set SITE.whatsapp in js/data.js. Message would be:\n" + text);
         return;
       }
-      msg.textContent = "Opening WhatsApp…";
+      msg.textContent = "WhatsApp is opening with your request. Tap send to deliver it to Wiza.";
       const r = form.querySelector("[type=submit]").getBoundingClientRect();
       Sparkles.burst(r.left + r.width / 2, r.top + r.height / 2, 50);
       window.open(`https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+      form.elements.estimate.value = estimateText;
+      saveCopy(form);
     });
     form.addEventListener("input", e => e.target.closest(".field")?.classList.remove("is-error"));
+  }
+
+  /* ------------------------------------------------------------------------
+     Send a message → WhatsApp
+     ------------------------------------------------------------------------ */
+  const msgForm = $("[data-message-form]");
+  if (msgForm) {
+    const note = $("[data-message-msg]", msgForm);
+    msgForm.addEventListener("submit", e => {
+      e.preventDefault();
+      const f = msgForm.elements;
+      let bad = null;
+      for (const el of [f.name, f.message]) {
+        const empty = !el.value.trim();
+        el.closest(".field").classList.toggle("is-error", empty);
+        if (empty && !bad) bad = el;
+      }
+      if (bad) { note.classList.remove("is-ok"); note.textContent = "Please add your name and a message."; Haptics.fire("error"); bad.focus(); return; }
+      const text = [
+        `Hi Wiza, this is ${f.name.value.trim()}.`,
+        f.phone.value.trim() ? `My number: ${f.phone.value.trim()}` : "",
+        ``,
+        f.message.value.trim(),
+      ].filter((l, i) => l || i === 2).join("\n");
+      const r = msgForm.querySelector("[type=submit]").getBoundingClientRect();
+      Sparkles.burst(r.left + r.width / 2, r.top + r.height / 2, 40);
+      window.open(`https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+      saveCopy(msgForm);
+      note.classList.add("is-ok");
+      note.textContent = "WhatsApp is opening with your message. Tap send to deliver it to Wiza.";
+    });
+    msgForm.addEventListener("input", e => e.target.closest(".field")?.classList.remove("is-error"));
   }
 
   /* ------------------------------------------------------------------------
