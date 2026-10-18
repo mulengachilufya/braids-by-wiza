@@ -10,10 +10,16 @@ A static site with no build step and no dependencies: open `index.html`, or depl
 
 ## Business details (edit `js/data.js`)
 - WhatsApp: +260 760 877 104 · Calls only: +260 777 091 604
-- Based in Central Province. Transport costs apply outside the province.
+- Mobile braider, based in Kabwe. Central Province towns are the home area.
 - By appointment only. A 25% upfront payment secures a booking.
-- [ ] Prices: services show "On quote" until you set `from` on each `MENU` item (e.g. `from: 450`).
-- [ ] Instagram: set `instagram` once the account exists (the footer says "coming soon" until then).
+
+## Price estimate calculator
+Estimate = labour (style × size × length) + hair (only if non-plain) + transport (return bus from Kabwe + local rides + overnight for far towns).
+- `STYLES`: labour price and hair packs per style
+- `PRICING`: size/length multipliers, local transport bands, overnight allowance, range shown
+- `CITIES`: one-way bus fare from Kabwe per town
+- [ ] Wiza to confirm labour prices, hair pack prices and bus fares (current values are researched estimates).
+- [ ] Instagram: set `instagram` once the account exists.
 
 ## Adding new work
 1. Cut the photo out onto a white background and export a ~900px-wide `.webp` into `assets/work/`.

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Braids by Wiza — Luxury Braiding in Zambia</title>
-  <meta name="description" content="Braids by Wiza — knotless, Fulani, stitch, goddess braids and mukule, by appointment in Central Province, Zambia. Book on WhatsApp.">
+  <meta name="description" content="Braids by Wiza — knotless, Fulani, stitch, goddess braids and mukule, box braids, twists, French curls, locs and mukule. Mobile braider based in Kabwe, Zambia, with instant price estimates.">
   <meta name="theme-color" content="#0d0b0c">
   <meta property="og:title" content="Braids by Wiza">
   <meta property="og:description" content="Luxury braiding artistry, crafted by hand in Zambia.">
@@ -36,7 +36,7 @@
     </a>
     <nav class="nav__links" aria-label="Main">
       <a href="#work" data-haptic>Work</a>
-      <a href="#menu" data-haptic>The Menu</a>
+      <a href="#menu" data-haptic>Prices</a>
       <a href="#about" data-haptic>About Wiza</a>
       <a href="#map" data-haptic>Zambia</a>
       <a href="work.html" data-haptic>Lookbook</a>
@@ -54,7 +54,8 @@
   <div class="drawer" data-drawer>
     <nav aria-label="Mobile">
       <a href="#work" data-haptic>Signature Work</a>
-      <a href="#menu" data-haptic>The Menu</a>
+      <a href="#menu" data-haptic>Styles &amp; Prices</a>
+      <a href="#estimate" data-haptic>Price Estimate</a>
       <a href="#finder" data-haptic>Style Finder</a>
       <a href="#about" data-haptic>About Wiza</a>
       <a href="#map" data-haptic>Across Zambia</a>
@@ -70,12 +71,12 @@
       <canvas class="hero__field" aria-hidden="true"></canvas>
       <div class="hero__grain" aria-hidden="true"></div>
       <div class="hero__content">
-        <p class="eyebrow reveal">By appointment only &middot; Central Province, Zambia</p>
+        <p class="eyebrow reveal">Mobile luxury braiding &middot; Based in Kabwe</p>
         <h1 class="hero__title">
           <span class="script reveal">Braids by</span>
           <span class="hero__name" data-split>Wiza</span>
         </h1>
-        <p class="hero__lede reveal">Every part is drawn by hand, and every braid is laid to last. Braiding for women who notice the details.</p>
+        <p class="hero__lede reveal">Every part is drawn by hand, and every braid is laid to last. Wiza comes to you, wherever you are in Zambia.</p>
         <div class="hero__ctas reveal">
           <a class="btn btn--pink magnetic" href="#book" data-haptic="medium">Book your chair</a>
           <a class="btn btn--ghost magnetic" href="work.html" data-haptic>See the lookbook</a>
@@ -115,11 +116,44 @@
     <!-- MENU / CATALOGUE -->
     <section class="section menu" id="menu">
       <div class="section__head">
-        <p class="eyebrow reveal">02 &mdash; The menu</p>
+        <p class="eyebrow reveal">02 &mdash; Styles &amp; prices</p>
         <h2 class="reveal">A catalogue of <em>crowns.</em></h2>
-        <p class="section__sub reveal">Every head of hair is different, so Wiza quotes each booking personally on WhatsApp, based on length, size and the look you want.</p>
+        <p class="section__sub reveal">Labour prices for each style. Tap a style to get an instant estimate for your size, length, hair and location.</p>
       </div>
       <div class="menu__panel" data-menu-panel></div>
+
+      <div class="calc reveal" id="estimate" data-calc>
+        <div class="calc__head">
+          <p class="eyebrow">Instant price estimate</p>
+          <h3>What will my <em>look</em> cost?</h3>
+          <p>Choose your style, your hair and where you are. Wiza is mobile, so transport to you is included.</p>
+        </div>
+        <div class="calc__grid">
+          <div class="calc__form">
+            <label class="field"><span>1 &middot; Style</span><select data-c-style></select></label>
+            <div class="calc__row" data-c-size-wrap><span class="calc__label">Braid size</span><div class="seg" role="radiogroup" aria-label="Braid size" data-c-size></div></div>
+            <div class="calc__row" data-c-length-wrap><span class="calc__label">Length</span><div class="seg" role="radiogroup" aria-label="Length" data-c-length></div></div>
+            <div class="calc__row" data-c-hair-wrap>
+              <span class="calc__label">2 &middot; Hair</span>
+              <div class="hair-opts" role="radiogroup" aria-label="Hair">
+                <button type="button" role="radio" class="hair-opt" data-hair="plain" aria-checked="true"><b>Plain</b><small>I'll bring my own hair</small></button>
+                <button type="button" role="radio" class="hair-opt" data-hair="full" aria-checked="false"><b>Non-plain</b><small data-c-hair-note>Wiza buys the hair</small></button>
+              </div>
+            </div>
+            <label class="field"><span>3 &middot; Your town</span><select data-c-town></select></label>
+            <div class="calc__row" data-c-area-wrap><span class="calc__label">Where in town?</span><div class="seg seg--wrap" role="radiogroup" aria-label="Where in town" data-c-area></div></div>
+          </div>
+          <div class="calc__result" aria-live="polite">
+            <p class="eyebrow">Your estimate</p>
+            <div class="calc__total"><span class="calc__k">K</span><span data-c-total>0</span></div>
+            <p class="calc__range" data-c-range></p>
+            <ul class="calc__lines" data-c-lines></ul>
+            <p class="calc__deposit" data-c-deposit></p>
+            <a class="btn btn--pink btn--block magnetic" href="#book" data-c-book data-haptic="medium">Book with this estimate</a>
+            <p class="calc__fine">This is an estimate. Wiza confirms your final price on WhatsApp before you pay the 25% deposit.</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- STYLE FINDER -->
@@ -159,8 +193,8 @@
     <section class="section map" id="map">
       <div class="section__head">
         <p class="eyebrow reveal">05 &mdash; Across Zambia</p>
-        <h2 class="reveal">Rooted in Central, <em>reaching you.</em></h2>
-        <p class="section__sub reveal">Wiza is based in Central Province. Drag or tilt the map, then tap your town. For appointments outside Central Province, transport costs are added to your final bill.</p>
+        <h2 class="reveal">She comes <em>to you.</em></h2>
+        <p class="section__sub reveal">Wiza is a mobile braider based in Kabwe, and she comes to you. Drag or tilt the map, then tap your town to see what transport adds to your booking.</p>
       </div>
       <div class="map__wrap">
         <div class="map__stage" data-map-stage>
@@ -200,7 +234,8 @@
       </div>
       <div class="faq__list">
         <details class="reveal" data-haptic><summary>How does booking work?</summary><p>Wiza works by appointment only. Request your preferred date through the form below. Wiza will confirm it with you on WhatsApp, and a 25% upfront payment secures your slot. The balance is paid on the day.</p></details>
-        <details class="reveal" data-haptic><summary>Do you come to clients outside Central Province?</summary><p>Yes. Wiza is based in Central Province. For appointments outside the province, transport-related costs will reflect in your final bill, and she'll include them in your quote.</p></details>
+        <details class="reveal" data-haptic><summary>Do you come to me?</summary><p>Yes, Wiza is mobile. She's based in Kabwe and travels to clients across Zambia. Outside Central Province, transport (bus fare, local rides and, for far towns, a night's stay) reflects in your final bill. Use the <a href="#estimate">price estimate</a> to see it upfront.</p></details>
+        <details class="reveal" data-haptic><summary>What's the difference between plain and non-plain?</summary><p>Plain means you buy and bring your own braiding hair, and you pay for labour only. Non-plain means Wiza buys the right hair for your style, and its cost is added to your price.</p></details>
         <details class="reveal" data-haptic><summary>Should I come with my hair washed?</summary><p>Yes, please have clean, detangled, blow-dried hair before your appointment. It makes for a neater, longer-lasting result.</p></details>
         <details class="reveal" data-haptic><summary>Do I bring my own braiding hair?</summary><p>Mention your style when you book, and Wiza will tell you exactly what hair to get and how many packs you'll need.</p></details>
         <details class="reveal" data-haptic><summary>Can I call instead of messaging?</summary><p>Of course. Call <a href="tel:+260777091604">+260 777 091 604</a> (calls only), or WhatsApp <a href="https://wa.me/260760877104" target="_blank" rel="noopener">+260 760 877 104</a>.</p></details>
@@ -219,7 +254,7 @@
             <li class="reveal"><span>2</span><div><strong>Wiza confirms</strong>She'll reply on WhatsApp with your quote.</div></li>
             <li class="reveal"><span>3</span><div><strong>Pay 25% upfront</strong>Your deposit secures the appointment.</div></li>
           </ol>
-          <p class="book__note reveal">Outside Central Province? Transport-related costs will reflect in your final bill.</p>
+          <p class="book__note reveal">Wiza is mobile, based in Kabwe. Outside Central Province, transport-related costs will reflect in your final bill.</p>
           <div class="book__contact reveal">
             <a href="https://wa.me/260760877104" target="_blank" rel="noopener" data-haptic><span class="eyebrow">WhatsApp</span>+260 760 877 104</a>
             <a href="tel:+260777091604" data-haptic><span class="eyebrow">Calls only</span>+260 777 091 604</a>
@@ -231,6 +266,7 @@
           </div>
         </div>
         <form class="book__form reveal" data-book-form novalidate>
+          <p class="book__estimate" data-book-estimate hidden><span class="eyebrow">Your estimate</span><b></b></p>
           <label class="field"><span>Your name</span><input name="name" autocomplete="name" required placeholder="e.g. Natasha"></label>
           <label class="field"><span>Style</span><select name="style" required data-style-select></select></label>
           <div class="field-row">
@@ -254,7 +290,7 @@
 
   <footer class="footer">
     <div class="footer__brand"><span class="script">Braids by</span> <span class="display">Wiza</span></div>
-    <p class="footer__tag">By appointment only &middot; Central Province, Zambia</p>
+    <p class="footer__tag">Mobile braiding &middot; Based in Kabwe, Zambia &middot; By appointment only</p>
     <div class="footer__links" data-socials></div>
     <p class="footer__small">&copy; <span data-year></span> Braids by Wiza. Crafted with love.</p>
   </footer>

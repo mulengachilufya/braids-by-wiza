@@ -487,16 +487,48 @@
   }
 
   /* ------------------------------------------------------------------------
-     The Menu (services)
+     Pricing: one estimator shared by the menu, calculator, map and booking.
+     Labour × size × length, + hair if non-plain, + transport from Kabwe.
      ------------------------------------------------------------------------ */
+  const STYLES = window.STYLES || [];
+  const PRICING = window.PRICING || {};
+  const kw = n => `K${Math.round(n).toLocaleString("en-US")}`;
+  const r10 = n => Math.round(n / 10) * 10;
+
+  function transportFor(townName, area = 1) {
+    const c = (window.CITIES || []).find(t => t.name === townName);
+    if (!c) return null;
+    const local = (PRICING.local?.[c.type] || [0, 0, 0])[area] || 0;
+    const overnight = c.bus >= PRICING.overnightFrom ? PRICING.overnight : 0;
+    return { bus: c.bus * 2, local, overnight, total: c.bus * 2 + local + overnight, city: c };
+  }
+
+  function estimate({ style, size = 1, length = 1, hair = "plain", town, area = 1 }) {
+    const st = STYLES.find(x => x.id === style) || STYLES[0];
+    const [, sl, sh] = st.sizes ? PRICING.sizes[size] : [0, 1, 1];
+    const [, ll, lh] = st.lengths ? PRICING.lengths[length] : [0, 1, 1];
+    const labour = r10(st.labour * sl * ll);
+    let hairCost = 0;
+    const packs = [];
+    if (hair === "full") for (const [n, price, what] of st.hair) {
+      const k = Math.ceil(n * sh * lh);
+      hairCost += k * price; packs.push(`${k} × ${what}`);
+    }
+    const tr = transportFor(town, area);
+    const total = labour + hairCost + (tr ? tr.total : 0);
+    const [lo, hi] = PRICING.range || [1, 1];
+    return { st, labour, hairCost, packs, tr, total, low: r10(total * lo), high: r10(total * hi), deposit: r10(total * (SITE.depositPercent || 25) / 100) };
+  }
+  window.estimatePrice = estimate;
+
   const panel = $("[data-menu-panel]");
-  if (panel && window.MENU) {
-    panel.innerHTML = window.MENU.map((it, i) => `
-      <article class="menu-item" style="animation-delay:${i * 0.07}s">
-        <h3>${it.name}</h3>
-        <div class="menu-item__price">${it.from != null ? `<small>from</small>K${it.from}` : `<small>price</small>On quote`}</div>
+  if (panel) {
+    panel.innerHTML = STYLES.map((it, i) => `
+      <article class="menu-item" style="animation-delay:${i * 0.05}s">
+        <h3>${it.name}${it.added ? ` <span class="badge">New</span>` : ""}</h3>
+        <div class="menu-item__price"><small>labour from</small>${kw(r10(it.labour * (it.sizes ? PRICING.sizes[0][1] : 1) * (it.lengths ? PRICING.lengths[0][1] : 1)))}</div>
         <p>${it.desc}</p>
-        <div class="menu-item__meta"><span>${it.group}</span><button type="button" class="menu-item__add" data-pick="${it.name}">Book this</button></div>
+        <div class="menu-item__meta"><span>${it.hair.length ? `Non-plain adds hair from ${kw(estimate({ style: it.id, size: 0, length: 0, hair: "full" }).hairCost)}` : "No extra hair needed"}</span><button type="button" class="menu-item__add" data-pick="${it.id}">Estimate</button></div>
       </article>`).join("");
     $$(".menu-item", panel).forEach(el => el.addEventListener("pointermove", e => {
       const r = el.getBoundingClientRect();
@@ -506,8 +538,93 @@
       const b = e.target.closest("[data-pick]");
       if (!b) return;
       Haptics.fire("medium");
-      Booking?.pickService(b.dataset.pick);
+      Calc?.setStyle(b.dataset.pick);
+      $("#estimate").scrollIntoView({ behavior: "smooth", block: "start" });
     });
+  }
+
+  /* ------------------------------------------------------------------------
+     Instant price estimate calculator
+     ------------------------------------------------------------------------ */
+  var Calc = null;
+  const calcEl = $("[data-calc]");
+  if (calcEl && STYLES.length) {
+    const q = sel => $(sel, calcEl);
+    const state = { style: "knotless", size: 1, length: 1, hair: "plain", town: SITE.baseTown || "Kabwe", area: 1 };
+    const styleSel = q("[data-c-style]"), townSel = q("[data-c-town]");
+    styleSel.innerHTML = STYLES.map(s => `<option value="${s.id}">${s.name}</option>`).join("");
+    townSel.innerHTML = (window.CITIES || []).map(c => `<option>${c.name}</option>`).join("") + `<option value="">Elsewhere in Zambia</option>`;
+
+    function seg(el, labels, key) {
+      el.innerHTML = labels.map((l, i) => `<button type="button" role="radio" aria-checked="${i === state[key]}" data-i="${i}">${l}</button>`).join("");
+      el.addEventListener("click", e => {
+        const b = e.target.closest("button"); if (!b) return;
+        state[key] = +b.dataset.i; Haptics.fire("light"); render();
+      });
+    }
+    seg(q("[data-c-size]"), PRICING.sizes.map(s => s[0]), "size");
+    seg(q("[data-c-length]"), PRICING.lengths.map(s => s[0]), "length");
+    seg(q("[data-c-area]"), PRICING.areas, "area");
+    $$(".hair-opt", calcEl).forEach(b => b.addEventListener("click", () => { state.hair = b.dataset.hair; Haptics.fire("light"); render(); }));
+    styleSel.addEventListener("change", () => { state.style = styleSel.value; Haptics.fire("light"); render(); });
+    townSel.addEventListener("change", () => { state.town = townSel.value; Haptics.fire("light"); render(); });
+
+    const totalEl = q("[data-c-total]");
+    let shown = 0, anim = 0;
+    function countTo(v) {
+      cancelAnimationFrame(anim);
+      const from = shown, t0 = performance.now(), dur = reduceMotion ? 1 : 600;
+      (function step(t) {
+        const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+        shown = from + (v - from) * e;
+        totalEl.textContent = Math.round(shown).toLocaleString("en-US");
+        if (k < 1) anim = requestAnimationFrame(step);
+      })(t0);
+    }
+
+    let last = null;
+    function render() {
+      const r = estimate(state);
+      last = r;
+      styleSel.value = state.style; townSel.value = state.town;
+      q("[data-c-size-wrap]").hidden = !r.st.sizes;
+      q("[data-c-length-wrap]").hidden = !r.st.lengths;
+      q("[data-c-hair-wrap]").hidden = !r.st.hair.length;
+      if (!r.st.hair.length) state.hair = "plain";
+      q("[data-c-area-wrap]").hidden = !r.tr;
+      q("[data-c-hair-note]").textContent = r.st.id === "mukule-wig" ? "Wiza supplies the wig" : "Wiza buys the hair";
+      $$("[role=radio]", calcEl).forEach(b => {
+        const g = b.parentElement;
+        const on = b.classList.contains("hair-opt") ? b.dataset.hair === state.hair
+          : g.matches("[data-c-size]") ? +b.dataset.i === state.size
+          : g.matches("[data-c-length]") ? +b.dataset.i === state.length
+          : +b.dataset.i === state.area;
+        b.setAttribute("aria-checked", String(on));
+      });
+      countTo(r.total);
+      q("[data-c-range]").textContent = `Likely between ${kw(r.low)} and ${kw(r.high)}`;
+      const lines = [[`Labour: ${r.st.name}`, kw(r.labour)]];
+      if (state.hair === "full" && r.hairCost) lines.push([`Hair (${r.packs.join(", ")})`, kw(r.hairCost)]);
+      if (r.tr) {
+        if (r.tr.bus) lines.push([`Bus, Kabwe ⇄ ${state.town}`, kw(r.tr.bus)]);
+        lines.push([`Local transport (${PRICING.areas[state.area].toLowerCase()})`, kw(r.tr.local)]);
+        if (r.tr.overnight) lines.push(["Overnight stay & meals", kw(r.tr.overnight)]);
+      } else lines.push(["Transport", "Quoted by Wiza"]);
+      q("[data-c-lines]").innerHTML = lines.map(([a, b]) => `<li><span>${a}</span><b>${b}</b></li>`).join("");
+      q("[data-c-deposit]").innerHTML = `25% deposit to secure: <b>${kw(r.deposit)}</b>`;
+    }
+
+    q("[data-c-book]").addEventListener("click", () => {
+      const r = last;
+      const parts = [r.st.sizes ? PRICING.sizes[state.size][0] : "", r.st.lengths ? PRICING.lengths[state.length][0] : "", r.st.hair.length ? (state.hair === "full" ? "non-plain" : "plain") : ""].filter(Boolean);
+      Booking?.fromEstimate({
+        style: r.st.name, town: state.town || "Elsewhere in Zambia",
+        summary: `${kw(r.total)} (${kw(r.low)}–${kw(r.high)})${parts.length ? `, ${parts.join(", ")}` : ""}${r.tr ? `, ${PRICING.areas[state.area].toLowerCase()}` : ", transport to be quoted"}`,
+      });
+    });
+
+    Calc = { setStyle(id) { state.style = id; render(); } };
+    render();
   }
 
   /* ------------------------------------------------------------------------
@@ -618,12 +735,14 @@
       Haptics.fire("medium");
       card.city.textContent = c.name;
       card.region.textContent = c.region;
+      const tr = transportFor(c.name, 0), tr2 = transportFor(c.name, 2);
+      const trText = `Transport to you: about ${kw(tr.total)}–${kw(tr2.total)}, depending on where in ${c.name} you are.`;
       if (isHome(c)) {
-        card.copy.textContent = `${c.name} is in ${base}, Wiza's home area. Request your date and Wiza will confirm it with you on WhatsApp.`;
+        card.copy.textContent = `${c.name} is in ${base}, Wiza's home area. ${trText}`;
         route.setAttribute("d", "");
       } else {
         const km = Math.round(Math.hypot(c.x - hub.x, c.y - hub.y) * KM_PER_UNIT / 10) * 10;
-        card.copy.textContent = `About ${km} km from ${base}. Bookings in ${c.name} are welcome. Transport-related costs will reflect in your final bill.`;
+        card.copy.textContent = `About ${km} km from Kabwe, and Wiza comes to you. ${trText}`;
         const mx = (c.x + hub.x) / 2, my = (c.y + hub.y) / 2 - Math.hypot(c.x - hub.x, c.y - hub.y) * 0.3;
         route.setAttribute("d", `M${hub.x},${hub.y} Q${mx},${my} ${c.x},${c.y}`);
       }
@@ -674,11 +793,11 @@
   if (form) {
     const styleSel = $("[data-style-select]", form), townSel = $("[data-town-select]", form);
     const chosen = $("[data-chosen]"), msg = $("[data-form-msg]", form);
-    let chosenLook = null;
+    let chosenLook = null, estimateText = "";
 
     styleSel.innerHTML = `<option value="">Choose a style…</option>` +
       `<optgroup label="From the lookbook" data-look-group></optgroup>` +
-      `<optgroup label="Services">${(window.MENU || []).map(i => `<option>${i.name}</option>`).join("")}</optgroup>` +
+      `<optgroup label="Styles">${STYLES.map(i => `<option>${i.name}</option>`).join("")}</optgroup>` +
       `<option>Not sure yet: help me choose</option>`;
     $("[data-look-group]", styleSel).innerHTML = LOOKS.map(l => `<option value="look:${l.id}">${l.title}</option>`).join("");
     townSel.innerHTML = (window.CITIES || []).map(c => `<option>${c.name}</option>`).join("") + `<option>Elsewhere in Zambia</option>`;
@@ -699,6 +818,7 @@
     }
     styleSel.addEventListener("change", () => {
       const v = styleSel.value;
+      estimateText = ""; const est = $("[data-book-estimate]"); if (est) est.hidden = true;
       chosenLook = v.startsWith("look:") ? LOOKS.find(l => `look:${l.id}` === v) : null;
       showChosen();
     });
@@ -706,7 +826,12 @@
 
     Booking = {
       choose,
-      pickService(name) { styleSel.value = name; chosenLook = null; showChosen(); $("#book").scrollIntoView({ behavior: "smooth" }); },
+      fromEstimate({ style, town, summary }) {
+        styleSel.value = style; townSel.value = town; chosenLook = null; showChosen();
+        estimateText = summary;
+        const est = $("[data-book-estimate]");
+        if (est) { est.hidden = false; $("b", est).textContent = summary; }
+      },
       setTown(name) { townSel.value = name; },
     };
 
@@ -737,6 +862,7 @@
         `• Style: ${style}`,
         `• Date: ${date}, ${f.time.value}`,
         `• Town: ${f.town.value}`,
+        estimateText ? `• Website estimate: ${estimateText}` : "",
         f.notes.value.trim() ? `• Notes: ${f.notes.value.trim()}` : "",
         ``,
         `I understand a ${SITE.depositPercent || 25}% upfront payment secures my appointment once you confirm.`,

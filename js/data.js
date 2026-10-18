@@ -16,8 +16,9 @@ window.SITE = {
   tiktok: "",
   email: "",
 
-  // Wiza's base. Towns in this province are within her home area on the map;
+  // Wiza is mobile, based in Kabwe. Towns in this province are her home area;
   // anywhere else carries transport costs on the final bill.
+  baseTown: "Kabwe",
   baseProvince: "Central Province",
   // Upfront payment that secures an appointment.
   depositPercent: 25,
@@ -46,38 +47,58 @@ window.LOOK_FILTERS = [
 ];
 
 /* --------------------------------------------------------------------------
-   The Menu — Wiza's services.
-   Set `from` to a number (e.g. from: 450) to show a starting price;
-   leave it null to show "Quote on WhatsApp".
+   Styles & pricing (all prices in Zambian Kwacha).
+   `labour`: Wiza's labour for a MEDIUM size, MID-BACK length, client brings hair ("plain").
+   `hair`:   what Wiza buys for "non-plain" at medium / mid-back: [packs, kwacha per pack, what].
+   `sizes` / `lengths`: whether the size and length options apply to this style.
+   Cheapest to most expensive. Four styles marked `added` were researched additions.
    -------------------------------------------------------------------------- */
-window.MENU = [
-  { group: "Knotless",  name: "Knotless Braids",  from: null, desc: "Tension-free from the root, flat and light on the scalp, in the length and size you choose." },
-  { group: "Fulani",    name: "Stitch Fulani",    from: null, desc: "Fulani pattern with crisp stitch-detailed cornrows at the front." },
-  { group: "Fulani",    name: "Fishtail Fulani",  from: null, desc: "Fulani styling finished with intricate fishtail braids." },
-  { group: "Stitch",    name: "Stitch Braids",    from: null, desc: "Precise stitch lines, straight-back or freestyle: swirls, waves and curves." },
-  { group: "Goddess",   name: "Goddess Braids",   from: null, desc: "Braids with soft curly ends and face-framing tendrils." },
-  { group: "Mukule",    name: "Mukule (Plain)",   from: null, desc: "Classic Zambian mukule, neat and beautifully finished." },
-  { group: "Mukule",    name: "Mukule with Wig",  from: null, desc: "A mukule base finished with a wig for a full, polished look." },
+window.STYLES = [
+  { id: "mukule",         group: "Mukule",    name: "Mukule (Plain)",         labour: 120, hair: [],                                   sizes: false, lengths: false, desc: "Classic Zambian mukule, neat and beautifully finished." },
+  { id: "mukule-wig",     group: "Mukule",    name: "Mukule with Wig",        labour: 200, hair: [[1, 350, "wig"]],                    sizes: false, lengths: false, desc: "A mukule base finished with a wig for a full, polished look." },
+  { id: "stitch",         group: "Stitch",    name: "Stitch Braids",          labour: 200, hair: [[2, 70, "pre-stretched braiding hair"]], sizes: true,  lengths: false, desc: "Precise stitch lines, straight-back or freestyle: swirls, waves and curves." },
+  { id: "stitch-fulani",  group: "Fulani",    name: "Stitch Fulani",          labour: 300, hair: [[4, 70, "pre-stretched braiding hair"]], sizes: true,  lengths: true,  desc: "Fulani pattern with crisp stitch-detailed cornrows at the front." },
+  { id: "box",            group: "Box",       name: "Box Braids",             labour: 350, hair: [[5, 70, "pre-stretched braiding hair"]], sizes: true,  lengths: true,  added: true, desc: "Classic square-parted braids. A Southern African favourite that suits everyone." },
+  { id: "twists",         group: "Twists",    name: "Passion / Senegalese Twists", labour: 350, hair: [[4, 120, "twist hair"]],        sizes: true,  lengths: true,  added: true, desc: "Soft two-strand twists. Lighter than braids and quick to style." },
+  { id: "fishtail-fulani",group: "Fulani",    name: "Fishtail Fulani",        labour: 350, hair: [[4, 70, "pre-stretched braiding hair"]], sizes: true,  lengths: true,  desc: "Fulani styling finished with intricate fishtail braids." },
+  { id: "knotless",       group: "Knotless",  name: "Knotless Braids",        labour: 400, hair: [[5, 70, "pre-stretched braiding hair"]], sizes: true,  lengths: true,  desc: "Tension-free from the root, flat and light on the scalp." },
+  { id: "goddess",        group: "Goddess",   name: "Goddess Braids",         labour: 450, hair: [[4, 70, "pre-stretched braiding hair"], [2, 160, "curly hair"]], sizes: true, lengths: true, desc: "Braids with soft curly ends and face-framing tendrils." },
+  { id: "french-curl",    group: "French Curl", name: "French Curl Braids",   labour: 450, hair: [[4, 150, "French curl hair"]],       sizes: true,  lengths: true,  added: true, desc: "Braids with bouncy curled ends. Soft, glamorous and very on-trend." },
+  { id: "locs",           group: "Locs",      name: "Butterfly / Faux Locs",  labour: 500, hair: [[6, 110, "loc / twist hair"]],      sizes: true,  lengths: true,  added: true, desc: "Boho, textured locs without the commitment." },
 ];
 
+window.PRICING = {
+  // [label, labour multiplier, hair multiplier]
+  sizes:   [["Large", 0.8, 0.9], ["Medium", 1, 1], ["Small", 1.3, 1.15]],
+  lengths: [["Shoulder", 0.85, 0.7], ["Mid-back", 1, 1], ["Waist", 1.2, 1.3], ["Butt", 1.4, 1.6]],
+  // Local transport (Yango / taxi) for the whole trip, by town type and where in town.
+  areas: ["Town centre", "Residential area", "Outskirts / farm area"],
+  local: { home: [50, 100, 150], city: [150, 250, 350], town: [100, 150, 250] },
+  // Added when the one-way bus fare is this much or more (a night's stay + meals).
+  overnightFrom: 500,
+  overnight: 400,
+  // The estimate is shown as a range: total × low … total × high.
+  range: [0.95, 1.1],
+};
+
 /* --------------------------------------------------------------------------
-   Map pins. Coordinates are in the 1000-wide Zambia map space
-   (generated alongside js/zambia-shape.js).
+   Towns: map position (1000-wide Zambia map space, see js/zambia-shape.js),
+   `bus` = one-way bus fare from Kabwe in kwacha, `type` sets the local transport band.
    -------------------------------------------------------------------------- */
 window.CITIES = [
-  { name: "Kabwe",         x: 554, y: 550, region: "Central Province" },
-  { name: "Kapiri Mposhi", x: 574, y: 508, region: "Central Province" },
-  { name: "Mkushi",        x: 634, y: 477, region: "Central Province" },
-  { name: "Serenje",       x: 706, y: 443, region: "Central Province" },
-  { name: "Lusaka",        x: 539, y: 636, region: "Lusaka Province" },
-  { name: "Ndola",         x: 570, y: 420, region: "Copperbelt" },
-  { name: "Kitwe",         x: 533, y: 405, region: "Copperbelt" },
-  { name: "Chingola",      x: 502, y: 381, region: "Copperbelt" },
-  { name: "Solwezi",       x: 378, y: 351, region: "North-Western" },
-  { name: "Mansa",         x: 592, y: 264, region: "Luapula" },
-  { name: "Kasama",        x: 788, y: 177, region: "Northern" },
-  { name: "Chipata",       x: 913, y: 479, region: "Eastern" },
-  { name: "Mongu",         x: 98,  y: 621, region: "Western" },
-  { name: "Choma",         x: 428, y: 758, region: "Southern" },
-  { name: "Livingstone",   x: 331, y: 849, region: "Southern" },
+  { name: "Kabwe",         x: 554, y: 550, region: "Central Province", bus: 0,   type: "home" },
+  { name: "Kapiri Mposhi", x: 574, y: 508, region: "Central Province", bus: 40,  type: "home" },
+  { name: "Mkushi",        x: 634, y: 477, region: "Central Province", bus: 100, type: "home" },
+  { name: "Serenje",       x: 706, y: 443, region: "Central Province", bus: 150, type: "home" },
+  { name: "Lusaka",        x: 539, y: 636, region: "Lusaka Province",  bus: 300, type: "city" },
+  { name: "Ndola",         x: 570, y: 420, region: "Copperbelt",       bus: 200, type: "city" },
+  { name: "Kitwe",         x: 533, y: 405, region: "Copperbelt",       bus: 250, type: "city" },
+  { name: "Chingola",      x: 502, y: 381, region: "Copperbelt",       bus: 280, type: "town" },
+  { name: "Solwezi",       x: 378, y: 351, region: "North-Western",    bus: 450, type: "town" },
+  { name: "Mansa",         x: 592, y: 264, region: "Luapula",          bus: 500, type: "town" },
+  { name: "Kasama",        x: 788, y: 177, region: "Northern",         bus: 650, type: "town" },
+  { name: "Chipata",       x: 913, y: 479, region: "Eastern",          bus: 650, type: "town" },
+  { name: "Mongu",         x: 98,  y: 621, region: "Western",          bus: 700, type: "town" },
+  { name: "Choma",         x: 428, y: 758, region: "Southern",         bus: 550, type: "town" },
+  { name: "Livingstone",   x: 331, y: 849, region: "Southern",         bus: 700, type: "town" },
 ];
