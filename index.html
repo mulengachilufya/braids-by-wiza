@@ -55,7 +55,7 @@
     <nav aria-label="Mobile">
       <a href="#work" data-haptic>Signature Work</a>
       <a href="#menu" data-haptic>Styles &amp; Prices</a>
-      <a href="#estimate" data-haptic>Price Estimate</a>
+      <a href="#estimate" data-haptic>Price Check</a>
       <a href="#finder" data-haptic>Style Finder</a>
       <a href="#about" data-haptic>About Wiza</a>
       <a href="#map" data-haptic>Across Zambia</a>
@@ -124,33 +124,32 @@
 
       <div class="calc reveal" id="estimate" data-calc>
         <div class="calc__head">
-          <p class="eyebrow">Instant price estimate</p>
-          <h3>What will my <em>look</em> cost?</h3>
-          <p>Choose your style, your hair and where you are. Wiza is mobile, so transport to you is included.</p>
+          <p class="eyebrow">Price check</p>
+          <h3>How much will it <em>cost?</em></h3>
+          <p>Pick your style and tell us where you are. Wiza comes to you, so her transport is part of the price.</p>
         </div>
         <div class="calc__grid">
           <div class="calc__form">
-            <label class="field"><span>1 &middot; Style</span><select data-c-style></select></label>
+            <label class="field"><span>Style</span><select data-c-style></select></label>
             <div class="calc__row" data-c-size-wrap><span class="calc__label">Braid size</span><div class="seg" role="radiogroup" aria-label="Braid size" data-c-size></div></div>
             <div class="calc__row" data-c-length-wrap><span class="calc__label">Length</span><div class="seg" role="radiogroup" aria-label="Length" data-c-length></div></div>
             <div class="calc__row" data-c-hair-wrap>
-              <span class="calc__label">2 &middot; Hair</span>
+              <span class="calc__label">Hair</span>
               <div class="hair-opts" role="radiogroup" aria-label="Hair">
                 <button type="button" role="radio" class="hair-opt" data-hair="plain" aria-checked="true"><b>Plain</b><small>I'll bring my own hair</small></button>
                 <button type="button" role="radio" class="hair-opt" data-hair="full" aria-checked="false"><b>Non-plain</b><small data-c-hair-note>Wiza buys the hair</small></button>
               </div>
             </div>
-            <label class="field"><span>3 &middot; Your town</span><select data-c-town></select></label>
+            <label class="field"><span>Your town</span><select data-c-town></select></label>
             <div class="calc__row" data-c-area-wrap><span class="calc__label">Where in town?</span><div class="seg seg--wrap" role="radiogroup" aria-label="Where in town" data-c-area></div></div>
           </div>
           <div class="calc__result" aria-live="polite">
-            <p class="eyebrow">Your estimate</p>
-            <div class="calc__total"><span class="calc__k">K</span><span data-c-total>0</span></div>
-            <p class="calc__range" data-c-range></p>
+            <p class="calc__lead">You can expect to pay</p>
+            <div class="calc__total"><span data-c-min>K0</span><span class="calc__to">to</span><span data-c-max>K0</span></div>
             <ul class="calc__lines" data-c-lines></ul>
             <p class="calc__deposit" data-c-deposit></p>
-            <a class="btn btn--pink btn--block magnetic" href="#book" data-c-book data-haptic="medium">Book with this estimate</a>
-            <p class="calc__fine">This is an estimate. Wiza confirms your final price on WhatsApp before you pay the 25% deposit.</p>
+            <a class="btn btn--pink btn--block magnetic" href="#book" data-c-book data-haptic="medium">Book this</a>
+            <p class="calc__fine">Wiza will confirm the exact price on WhatsApp before you pay anything.</p>
           </div>
         </div>
       </div>
@@ -266,7 +265,7 @@
           </div>
         </div>
         <form class="book__form reveal" data-book-form novalidate>
-          <p class="book__estimate" data-book-estimate hidden><span class="eyebrow">Your estimate</span><b></b></p>
+          <p class="book__estimate" data-book-estimate hidden><span class="eyebrow">Price range</span><b></b></p>
           <label class="field"><span>Your name</span><input name="name" autocomplete="name" required placeholder="e.g. Natasha"></label>
           <label class="field"><span>Style</span><select name="style" required data-style-select></select></label>
           <div class="field-row">

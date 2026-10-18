@@ -50,19 +50,20 @@ window.LOOK_FILTERS = [
    Styles & pricing (all prices in Zambian Kwacha).
    `labour`: Wiza's labour for a MEDIUM size, MID-BACK length, client brings hair ("plain").
    `hair`:   what Wiza buys for "non-plain" at medium / mid-back: [packs, kwacha per pack, what].
+             A price can be [min, max]: braiding hair is K70 a small pack, K150 a big pack.
    `sizes` / `lengths`: whether the size and length options apply to this style.
    Cheapest to most expensive. Four styles marked `added` were researched additions.
    -------------------------------------------------------------------------- */
 window.STYLES = [
   { id: "mukule",         group: "Mukule",    name: "Mukule (Plain)",         labour: 120, hair: [],                                   sizes: false, lengths: false, desc: "Classic Zambian mukule, neat and beautifully finished." },
   { id: "mukule-wig",     group: "Mukule",    name: "Mukule with Wig",        labour: 200, hair: [[1, 350, "wig"]],                    sizes: false, lengths: false, desc: "A mukule base finished with a wig for a full, polished look." },
-  { id: "stitch",         group: "Stitch",    name: "Stitch Braids",          labour: 200, hair: [[2, 70, "pre-stretched braiding hair"]], sizes: true,  lengths: false, desc: "Precise stitch lines, straight-back or freestyle: swirls, waves and curves." },
-  { id: "stitch-fulani",  group: "Fulani",    name: "Stitch Fulani",          labour: 300, hair: [[4, 70, "pre-stretched braiding hair"]], sizes: true,  lengths: true,  desc: "Fulani pattern with crisp stitch-detailed cornrows at the front." },
-  { id: "box",            group: "Box",       name: "Box Braids",             labour: 350, hair: [[5, 70, "pre-stretched braiding hair"]], sizes: true,  lengths: true,  added: true, desc: "Classic square-parted braids. A Southern African favourite that suits everyone." },
+  { id: "stitch",         group: "Stitch",    name: "Stitch Braids",          labour: 200, hair: [[2, [70, 150], "braiding hair"]], sizes: true,  lengths: false, desc: "Precise stitch lines, straight-back or freestyle: swirls, waves and curves." },
+  { id: "stitch-fulani",  group: "Fulani",    name: "Stitch Fulani",          labour: 300, hair: [[4, [70, 150], "braiding hair"]], sizes: true,  lengths: true,  desc: "Fulani pattern with crisp stitch-detailed cornrows at the front." },
+  { id: "box",            group: "Box",       name: "Box Braids",             labour: 350, hair: [[5, [70, 150], "braiding hair"]], sizes: true,  lengths: true,  added: true, desc: "Classic square-parted braids. A Southern African favourite that suits everyone." },
   { id: "twists",         group: "Twists",    name: "Passion / Senegalese Twists", labour: 350, hair: [[4, 120, "twist hair"]],        sizes: true,  lengths: true,  added: true, desc: "Soft two-strand twists. Lighter than braids and quick to style." },
-  { id: "fishtail-fulani",group: "Fulani",    name: "Fishtail Fulani",        labour: 350, hair: [[4, 70, "pre-stretched braiding hair"]], sizes: true,  lengths: true,  desc: "Fulani styling finished with intricate fishtail braids." },
-  { id: "knotless",       group: "Knotless",  name: "Knotless Braids",        labour: 400, hair: [[5, 70, "pre-stretched braiding hair"]], sizes: true,  lengths: true,  desc: "Tension-free from the root, flat and light on the scalp." },
-  { id: "goddess",        group: "Goddess",   name: "Goddess Braids",         labour: 450, hair: [[4, 70, "pre-stretched braiding hair"], [2, 160, "curly hair"]], sizes: true, lengths: true, desc: "Braids with soft curly ends and face-framing tendrils." },
+  { id: "fishtail-fulani",group: "Fulani",    name: "Fishtail Fulani",        labour: 350, hair: [[4, [70, 150], "braiding hair"]], sizes: true,  lengths: true,  desc: "Fulani styling finished with intricate fishtail braids." },
+  { id: "knotless",       group: "Knotless",  name: "Knotless Braids",        labour: 400, hair: [[5, [70, 150], "braiding hair"]], sizes: true,  lengths: true,  desc: "Tension-free from the root, flat and light on the scalp." },
+  { id: "goddess",        group: "Goddess",   name: "Goddess Braids",         labour: 450, hair: [[4, [70, 150], "braiding hair"], [2, 160, "curly hair"]], sizes: true, lengths: true, desc: "Braids with soft curly ends and face-framing tendrils." },
   { id: "french-curl",    group: "French Curl", name: "French Curl Braids",   labour: 450, hair: [[4, 150, "French curl hair"]],       sizes: true,  lengths: true,  added: true, desc: "Braids with bouncy curled ends. Soft, glamorous and very on-trend." },
   { id: "locs",           group: "Locs",      name: "Butterfly / Faux Locs",  labour: 500, hair: [[6, 110, "loc / twist hair"]],      sizes: true,  lengths: true,  added: true, desc: "Boho, textured locs without the commitment." },
 ];
@@ -77,7 +78,7 @@ window.PRICING = {
   // Added when the one-way bus fare is this much or more (a night's stay + meals).
   overnightFrom: 500,
   overnight: 400,
-  // The estimate is shown as a range: total × low … total × high.
+  // Shown as a range: cheapest case × low (rounded down to K50) to dearest case × high (rounded up to K50).
   range: [0.95, 1.1],
 };
 

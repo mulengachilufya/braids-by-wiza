@@ -508,16 +508,18 @@
     const [, sl, sh] = st.sizes ? PRICING.sizes[size] : [0, 1, 1];
     const [, ll, lh] = st.lengths ? PRICING.lengths[length] : [0, 1, 1];
     const labour = r10(st.labour * sl * ll);
-    let hairCost = 0;
-    const packs = [];
+    let hairMin = 0, hairMax = 0, packCount = 0;
     if (hair === "full") for (const [n, price, what] of st.hair) {
-      const k = Math.ceil(n * sh * lh);
-      hairCost += k * price; packs.push(`${k} × ${what}`);
+      const k = Math.ceil(n * sh * lh), [pMin, pMax] = [].concat(price, price);
+      hairMin += k * pMin; hairMax += k * pMax; packCount += k;
     }
     const tr = transportFor(town, area);
-    const total = labour + hairCost + (tr ? tr.total : 0);
+    const base = labour + (tr ? tr.total : 0);
     const [lo, hi] = PRICING.range || [1, 1];
-    return { st, labour, hairCost, packs, tr, total, low: r10(total * lo), high: r10(total * hi), deposit: r10(total * (SITE.depositPercent || 25) / 100) };
+    const min = Math.floor((base + hairMin) * lo / 50) * 50;
+    const max = Math.ceil((base + hairMax) * hi / 50) * 50;
+    const dep = (SITE.depositPercent || 25) / 100;
+    return { st, labour, hairMin, hairMax, packCount, tr, min, max, depMin: r10(min * dep), depMax: r10(max * dep) };
   }
   window.estimatePrice = estimate;
 
@@ -528,7 +530,7 @@
         <h3>${it.name}${it.added ? ` <span class="badge">New</span>` : ""}</h3>
         <div class="menu-item__price"><small>labour from</small>${kw(r10(it.labour * (it.sizes ? PRICING.sizes[0][1] : 1) * (it.lengths ? PRICING.lengths[0][1] : 1)))}</div>
         <p>${it.desc}</p>
-        <div class="menu-item__meta"><span>${it.hair.length ? `Non-plain adds hair from ${kw(estimate({ style: it.id, size: 0, length: 0, hair: "full" }).hairCost)}` : "No extra hair needed"}</span><button type="button" class="menu-item__add" data-pick="${it.id}">Estimate</button></div>
+        <div class="menu-item__meta"><span>${it.hair.length ? `Hair from ${kw(estimate({ style: it.id, size: 0, length: 0, hair: "full" }).hairMin)} extra if Wiza buys it` : "No extra hair needed"}</span><button type="button" class="menu-item__add" data-pick="${it.id}">Estimate</button></div>
       </article>`).join("");
     $$(".menu-item", panel).forEach(el => el.addEventListener("pointermove", e => {
       const r = el.getBoundingClientRect();
@@ -569,15 +571,16 @@
     styleSel.addEventListener("change", () => { state.style = styleSel.value; Haptics.fire("light"); render(); });
     townSel.addEventListener("change", () => { state.town = townSel.value; Haptics.fire("light"); render(); });
 
-    const totalEl = q("[data-c-total]");
-    let shown = 0, anim = 0;
-    function countTo(v) {
+    const minEl = q("[data-c-min]"), maxEl = q("[data-c-max]");
+    const shown = { min: 0, max: 0 };
+    let anim = 0;
+    function countTo(min, max) {
       cancelAnimationFrame(anim);
-      const from = shown, t0 = performance.now(), dur = reduceMotion ? 1 : 600;
+      const from = { ...shown }, t0 = performance.now(), dur = reduceMotion ? 1 : 500;
       (function step(t) {
         const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
-        shown = from + (v - from) * e;
-        totalEl.textContent = Math.round(shown).toLocaleString("en-US");
+        shown.min = from.min + (min - from.min) * e; shown.max = from.max + (max - from.max) * e;
+        minEl.textContent = kw(shown.min); maxEl.textContent = kw(shown.max);
         if (k < 1) anim = requestAnimationFrame(step);
       })(t0);
     }
@@ -601,17 +604,17 @@
           : +b.dataset.i === state.area;
         b.setAttribute("aria-checked", String(on));
       });
-      countTo(r.total);
-      q("[data-c-range]").textContent = `Likely between ${kw(r.low)} and ${kw(r.high)}`;
-      const lines = [[`Labour: ${r.st.name}`, kw(r.labour)]];
-      if (state.hair === "full" && r.hairCost) lines.push([`Hair (${r.packs.join(", ")})`, kw(r.hairCost)]);
+      countTo(r.min, r.max);
+      const range = (a, b) => a === b ? kw(a) : `${kw(a)} – ${kw(b)}`;
+      const lines = [[r.st.name, kw(r.labour)]];
+      if (state.hair === "full" && r.hairMax) lines.push([`Hair, about ${r.packCount} pack${r.packCount > 1 ? "s" : ""}`, range(r.hairMin, r.hairMax)]);
       if (r.tr) {
-        if (r.tr.bus) lines.push([`Bus, Kabwe ⇄ ${state.town}`, kw(r.tr.bus)]);
-        lines.push([`Local transport (${PRICING.areas[state.area].toLowerCase()})`, kw(r.tr.local)]);
-        if (r.tr.overnight) lines.push(["Overnight stay & meals", kw(r.tr.overnight)]);
-      } else lines.push(["Transport", "Quoted by Wiza"]);
+        if (r.tr.bus) lines.push([`Bus there and back`, kw(r.tr.bus)]);
+        lines.push([`Getting around ${state.town}`, kw(r.tr.local)]);
+        if (r.tr.overnight) lines.push(["A night's stay", kw(r.tr.overnight)]);
+      } else lines.push(["Transport", "Wiza will tell you"]);
       q("[data-c-lines]").innerHTML = lines.map(([a, b]) => `<li><span>${a}</span><b>${b}</b></li>`).join("");
-      q("[data-c-deposit]").innerHTML = `25% deposit to secure: <b>${kw(r.deposit)}</b>`;
+      q("[data-c-deposit]").innerHTML = `Deposit to book (25%): <b>${range(r.depMin, r.depMax)}</b>`;
     }
 
     q("[data-c-book]").addEventListener("click", () => {
@@ -619,7 +622,7 @@
       const parts = [r.st.sizes ? PRICING.sizes[state.size][0] : "", r.st.lengths ? PRICING.lengths[state.length][0] : "", r.st.hair.length ? (state.hair === "full" ? "non-plain" : "plain") : ""].filter(Boolean);
       Booking?.fromEstimate({
         style: r.st.name, town: state.town || "Elsewhere in Zambia",
-        summary: `${kw(r.total)} (${kw(r.low)}–${kw(r.high)})${parts.length ? `, ${parts.join(", ")}` : ""}${r.tr ? `, ${PRICING.areas[state.area].toLowerCase()}` : ", transport to be quoted"}`,
+        summary: `${kw(r.min)} – ${kw(r.max)}${parts.length ? `, ${parts.join(", ")}` : ""}${r.tr ? `, ${PRICING.areas[state.area].toLowerCase()}` : ", transport to be quoted"}`,
       });
     });
 
