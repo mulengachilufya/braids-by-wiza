@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Braids by Wiza — interactions
+   Braids by Wiza: interactions
    Plain JS, no dependencies. Each feature checks for its own markup, so the
    same file runs on index.html and work.html.
    ========================================================================== */
@@ -109,9 +109,6 @@
   if (document.readyState === "complete") reveal(); else addEventListener("load", reveal);
   setTimeout(() => document.body.classList.remove("is-loading"), 3500);
 
-  $$("[data-split]").forEach(el => {
-    el.innerHTML = [...el.textContent].map((c, i) => `<span class="ch" style="transition-delay:${0.25 + i * 0.08}s">${c}</span>`).join("");
-  });
 
   const nav = $("[data-nav]");
   const drawer = $("[data-drawer]");
@@ -155,7 +152,7 @@
     addEventListener("pointermove", e => { mx = e.clientX; my = e.clientY; dot.style.transform = `translate3d(${mx}px,${my}px,0) translate(-50%,-50%)`; });
     addEventListener("pointerdown", () => cursor.classList.add("is-down"));
     addEventListener("pointerup", () => cursor.classList.remove("is-down"));
-    document.addEventListener("pointerover", e => cursor.classList.toggle("is-hover", !!e.target.closest("a, button, summary, select, input, textarea, .look-card, .map-pin")));
+    document.addEventListener("pointerover", e => cursor.classList.toggle("is-hover", !!e.target.closest("a, button, summary, select, input, textarea, .look-card")));
     (function loop() { rx = lerp(rx, mx, 0.18); ry = lerp(ry, my, 0.18); ring.style.transform = `translate3d(${rx}px,${ry}px,0) translate(-50%,-50%)`; requestAnimationFrame(loop); })();
   }
 
@@ -164,14 +161,14 @@
     if (!sparkleCanvas || reduceMotion) return { burst() {} };
     const ctx = sparkleCanvas.getContext("2d");
     const parts = [];
-    const colors = ["#f4a7c3", "#e8457f", "#f0dcb5", "#ffffff"];
+    const colors = ["#a0785a", "#5e4333", "#b8607a"];
     let dpr = 1, running = false;
     const size = () => { dpr = Math.min(devicePixelRatio || 1, 2); sparkleCanvas.width = innerWidth * dpr; sparkleCanvas.height = innerHeight * dpr; };
     size(); addEventListener("resize", size);
     function add(x, y, n = 1, spread = 1) {
       for (let i = 0; i < n && parts.length < 160; i++) {
         const a = Math.random() * Math.PI * 2, s = (Math.random() * 1.6 + 0.3) * spread;
-        parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 0.4, life: 1, r: Math.random() * 2.2 + 0.8, c: colors[(Math.random() * colors.length) | 0], star: Math.random() < 0.35 });
+        parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 0.4, life: 1, r: Math.random() * 2.2 + 0.8, c: colors[(Math.random() * colors.length) | 0], star: false });
       }
       if (!running) { running = true; requestAnimationFrame(tick); }
     }
@@ -196,7 +193,6 @@
     const trail = (x, y) => { const d = Math.hypot(x - lx, y - ly); if (d > 14) { add(x, y, d > 40 ? 2 : 1, 0.6); lx = x; ly = y; } };
     if (finePointer) addEventListener("pointermove", e => trail(e.clientX, e.clientY), { passive: true });
     addEventListener("touchmove", e => { const t = e.touches[0]; if (t) trail(t.clientX, t.clientY); }, { passive: true });
-    document.addEventListener("click", e => { if (e.target.closest(".btn, .finder__opt, .map-pin, .chip, .menu-item__add")) add(e.clientX, e.clientY, 18, 2.2); });
     return { burst: (x, y, n = 18) => add(x, y, n, 2.2) };
   })();
 
@@ -297,7 +293,7 @@
 
     const grad = () => {
       const g = ctx.createLinearGradient(0, 0, W, H);
-      g.addColorStop(0, "rgba(244,167,195,.55)"); g.addColorStop(0.5, "rgba(215,180,124,.45)"); g.addColorStop(1, "rgba(232,69,127,.55)");
+      g.addColorStop(0, "rgba(59,42,32,.30)"); g.addColorStop(0.5, "rgba(160,120,90,.45)"); g.addColorStop(1, "rgba(184,96,122,.30)");
       return g;
     };
     let strokeGrad = grad(), gw = W;
@@ -326,11 +322,11 @@
 
       // force-field glow
       const glow = ctx.createRadialGradient(P.x, P.y, 0, P.x, P.y, R * 1.3);
-      glow.addColorStop(0, P.active ? "rgba(232,69,127,.30)" : "rgba(232,69,127,.12)");
-      glow.addColorStop(1, "rgba(232,69,127,0)");
+      glow.addColorStop(0, P.active ? "rgba(160,120,90,.18)" : "rgba(160,120,90,.06)");
+      glow.addColorStop(1, "rgba(160,120,90,0)");
       ctx.fillStyle = glow; ctx.fillRect(P.x - R * 1.4, P.y - R * 1.4, R * 2.8, R * 2.8);
       if (P.active) {
-        ctx.strokeStyle = "rgba(240,220,181,.35)"; ctx.lineWidth = 1;
+        ctx.strokeStyle = "rgba(59,42,32,.15)"; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.arc(P.x, P.y, R * (0.55 + Math.sin(t * 6) * 0.04), 0, 7); ctx.stroke();
       }
 
@@ -377,7 +373,7 @@
     b.innerHTML = `
       <div class="look-card__media"><img src="${look.img}" alt="${look.title}, braided by Wiza" loading="lazy"><span class="look-card__shine"></span></div>
       <div class="look-card__body">
-        <div><span class="look-card__num">N° ${String(i + 1).padStart(2, "0")}</span><h3 class="look-card__title">${look.title}</h3>
+        <div><h3 class="look-card__title">${look.title}</h3>
         ${tags ? `<div class="look-card__tags">${look.tags.filter(t => t !== "colour").map(t => `<span>${t}</span>`).join("")}</div>` : ""}</div>
         <span class="look-card__go">${arrow}</span>
       </div>`;
@@ -487,11 +483,12 @@
   }
 
   /* ------------------------------------------------------------------------
-     Pricing: one estimator shared by the menu, calculator, map and booking.
-     Labour × size × length, + hair if non-plain, + transport from Kabwe.
+     Pricing: one estimator shared by the menu, calculator and booking.
+     Labour × size × length, + hair if non-plain, + transport to the client.
      ------------------------------------------------------------------------ */
   const STYLES = window.STYLES || [];
   const PRICING = window.PRICING || {};
+  const townNames = (window.CITIES || []).map(c => c.name).sort();
   const kw = n => `K${Math.round(n).toLocaleString("en-US")}`;
   const r10 = n => Math.round(n / 10) * 10;
 
@@ -526,11 +523,11 @@
   const panel = $("[data-menu-panel]");
   if (panel) {
     panel.innerHTML = STYLES.map((it, i) => `
-      <article class="menu-item" style="animation-delay:${i * 0.05}s">
+      <article class="menu-item" style="animation-delay:${i * 0.04}s">
         <h3>${it.name}${it.added ? ` <span class="badge">New</span>` : ""}</h3>
-        <div class="menu-item__price"><small>labour from</small>${kw(r10(it.labour * (it.sizes ? PRICING.sizes[0][1] : 1) * (it.lengths ? PRICING.lengths[0][1] : 1)))}</div>
+        <div class="menu-item__price"><small>Starting from</small><b>${kw(r10(it.labour * (it.sizes ? PRICING.sizes[0][1] : 1) * (it.lengths ? PRICING.lengths[0][1] : 1)))}</b></div>
         <p>${it.desc}</p>
-        <div class="menu-item__meta"><span>${it.hair.length ? `Hair from ${kw(estimate({ style: it.id, size: 0, length: 0, hair: "full" }).hairMin)} extra if Wiza buys it` : "No extra hair needed"}</span><button type="button" class="menu-item__add" data-pick="${it.id}">Estimate</button></div>
+        <div class="menu-item__meta"><span>Labour only</span><button type="button" class="menu-item__add" data-pick="${it.id}">Check full price</button></div>
       </article>`).join("");
     $$(".menu-item", panel).forEach(el => el.addEventListener("pointermove", e => {
       const r = el.getBoundingClientRect();
@@ -552,10 +549,10 @@
   const calcEl = $("[data-calc]");
   if (calcEl && STYLES.length) {
     const q = sel => $(sel, calcEl);
-    const state = { style: "knotless", size: 1, length: 1, hair: "plain", town: SITE.baseTown || "Kabwe", area: 1 };
+    const state = { style: "knotless", size: 1, length: 1, hair: "plain", town: "", area: 1 };
     const styleSel = q("[data-c-style]"), townSel = q("[data-c-town]");
     styleSel.innerHTML = STYLES.map(s => `<option value="${s.id}">${s.name}</option>`).join("");
-    townSel.innerHTML = (window.CITIES || []).map(c => `<option>${c.name}</option>`).join("") + `<option value="">Elsewhere in Zambia</option>`;
+    townSel.innerHTML = `<option value="">Choose your town</option>` + townNames.map(n => `<option>${n}</option>`).join("") + `<option value="other">Elsewhere in Zambia</option>`;
 
     function seg(el, labels, key) {
       el.innerHTML = labels.map((l, i) => `<button type="button" role="radio" aria-checked="${i === state[key]}" data-i="${i}">${l}</button>`).join("");
@@ -605,24 +602,24 @@
         b.setAttribute("aria-checked", String(on));
       });
       countTo(r.min, r.max);
-      const range = (a, b) => a === b ? kw(a) : `${kw(a)} – ${kw(b)}`;
+      const range = (a, b) => a === b ? kw(a) : `${kw(a)} to ${kw(b)}`;
       const lines = [[r.st.name, kw(r.labour)]];
       if (state.hair === "full" && r.hairMax) lines.push([`Hair, about ${r.packCount} pack${r.packCount > 1 ? "s" : ""}`, range(r.hairMin, r.hairMax)]);
       if (r.tr) {
         if (r.tr.bus) lines.push([`Bus there and back`, kw(r.tr.bus)]);
         lines.push([`Getting around ${state.town}`, kw(r.tr.local)]);
         if (r.tr.overnight) lines.push(["A night's stay", kw(r.tr.overnight)]);
-      } else lines.push(["Transport", "Wiza will tell you"]);
+      } else lines.push(["Transport", state.town ? "Wiza will confirm" : "Choose your town"]);
       q("[data-c-lines]").innerHTML = lines.map(([a, b]) => `<li><span>${a}</span><b>${b}</b></li>`).join("");
       q("[data-c-deposit]").innerHTML = `Deposit to book (25%): <b>${range(r.depMin, r.depMax)}</b>`;
     }
 
     q("[data-c-book]").addEventListener("click", () => {
       const r = last;
-      const parts = [r.st.sizes ? PRICING.sizes[state.size][0] : "", r.st.lengths ? PRICING.lengths[state.length][0] : "", r.st.hair.length ? (state.hair === "full" ? "non-plain" : "plain") : ""].filter(Boolean);
+      const parts = [r.st.sizes ? PRICING.sizes[state.size][0] : "", r.st.lengths ? PRICING.lengths[state.length][0] : "", r.st.hair.length ? (state.hair === "full" ? "non plain" : "plain") : ""].filter(Boolean);
       Booking?.fromEstimate({
-        style: r.st.name, town: state.town || "Elsewhere in Zambia",
-        summary: `${kw(r.min)} – ${kw(r.max)}${parts.length ? `, ${parts.join(", ")}` : ""}${r.tr ? `, ${PRICING.areas[state.area].toLowerCase()}` : ", transport to be quoted"}`,
+        style: r.st.name, town: state.town === "other" ? "Elsewhere in Zambia" : state.town,
+        summary: `${kw(r.min)} to ${kw(r.max)}${parts.length ? `, ${parts.join(", ")}` : ""}${r.tr ? `, ${PRICING.areas[state.area].toLowerCase()}` : ", transport to be quoted"}`,
       });
     });
 
@@ -636,9 +633,9 @@
   const finder = $("[data-finder]");
   if (finder) {
     const Q = [
-      { q: "How much length do you love?", opts: [["short", "Short & chic", "Close to the head"], ["shoulder", "Mid-length", "Around the shoulders"], ["long", "Long & dramatic", "Mid-back and beyond"]] },
+      { q: "How much length do you love?", opts: [["short", "Short & chic", "Close to the head"], ["shoulder", "Medium length", "Around the shoulders"], ["long", "Long & dramatic", "Mid back and beyond"]] },
       { q: "What's the mood?", opts: [["classic", "Sleek & classic", "Clean lines"], ["romantic", "Soft & romantic", "Curls & movement"], ["bold", "Bold & artistic", "Patterns that turn heads"]] },
-      { q: "Time in the chair?", opts: [["quick", "Quick visit", "Under 3 hours"], ["half", "Half a day", "3 – 5 hours"], ["long", "Make it a day", "Worth every minute"]] },
+      { q: "Time in the chair?", opts: [["quick", "Quick visit", "Under 3 hours"], ["half", "Half a day", "3 to 5 hours"], ["long", "Make it a day", "Worth every minute"]] },
     ];
     let answers = [];
     function renderQ() {
@@ -657,13 +654,13 @@
       Haptics.fire("success");
       finder.innerHTML = `
         <div class="finder__result">
-          <p class="eyebrow">Your match</p>
+          <p class="finder__label">We suggest</p>
           <img src="${best.img}" alt="${best.title}">
           <h3>${best.title}</h3>
           <p>${best.note}</p>
           <div class="finder__actions">
-            <a class="btn btn--pink btn--sm" href="#book" data-finder-book>Book this look</a>
-            <button type="button" class="btn btn--sm chip finder__again" data-finder-again>Start again</button>
+            <a class="btn btn--dark btn--sm" href="#book" data-finder-book>Book this style</a>
+            <button type="button" class="btn btn--outline btn--sm" data-finder-again>Start again</button>
           </div>
         </div>`;
       $("[data-finder-book]", finder).addEventListener("click", () => Booking?.choose(best.id));
@@ -671,121 +668,6 @@
       const r = finder.getBoundingClientRect(); Sparkles.burst(r.left + r.width / 2, r.top + 120, 40);
     }
     renderQ();
-  }
-
-  /* ------------------------------------------------------------------------
-     3D Zambia map
-     ------------------------------------------------------------------------ */
-  const mapStage = $("[data-map-stage]");
-  if (mapStage && window.ZAMBIA && window.CITIES) {
-    const Z = window.ZAMBIA, plane = $("[data-map-plane]"), svg = $("[data-map-svg]");
-    const base = SITE.baseProvince || "Central Province";
-    const isHome = c => c.region === base;
-    // distances are measured from the first town in the home province (Kabwe)
-    const hub = window.CITIES.find(isHome) || window.CITIES[0];
-    const KM_PER_UNIT = 1.262; // map is 1000 units ≈ 1,262 km wide
-    svg.setAttribute("viewBox", `0 0 ${Z.w} ${Z.h}`);
-    const gridLines = [];
-    for (let x = 0; x <= Z.w; x += 100) gridLines.push(`<line x1="${x}" y1="-60" x2="${x}" y2="${Z.h + 60}"/>`);
-    for (let y = 0; y <= Z.h; y += 100) gridLines.push(`<line x1="-60" y1="${y}" x2="${Z.w + 60}" y2="${y}"/>`);
-    svg.innerHTML = `
-      <defs>
-        <linearGradient id="landFill" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#2a1520"/><stop offset=".55" stop-color="#4a1830"/><stop offset="1" stop-color="#7a2549"/>
-        </linearGradient>
-      </defs>
-      <g class="map__grid">${gridLines.join("")}</g>
-      <path class="map__land" d="${Z.d}"/>
-      <path class="map__route" data-route d=""/>`;
-    // extruded depth: stacked copies behind the top face
-    for (let i = 1; i <= 7; i++) {
-      const layer = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      layer.setAttribute("viewBox", `0 0 ${Z.w} ${Z.h}`); layer.setAttribute("class", "map__layer"); layer.setAttribute("aria-hidden", "true");
-      layer.style.transform = `translateZ(${-i * 4}px)`;
-      layer.innerHTML = `<path d="${Z.d}" fill="${i === 7 ? "#e8457f" : "#2a0f1c"}" opacity="${i === 7 ? 0.35 : 1}"/>`;
-      plane.prepend(layer);
-    }
-    const pinsWrap = document.createElement("div");
-    pinsWrap.className = "map__pins";
-    plane.append(pinsWrap);
-    const route = $("[data-route]", svg);
-    const card = { city: $("[data-map-city]"), region: $("[data-map-region]"), copy: $("[data-map-copy]"), book: $("[data-map-book]") };
-
-    window.CITIES.forEach(c => {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "map-pin" + (isHome(c) ? " is-home" : "");
-      b.style.left = `${(c.x / Z.w) * 100}%`; b.style.top = `${(c.y / Z.h) * 100}%`;
-      b.setAttribute("aria-label", c.name);
-      b.innerHTML = `<span class="map-pin__base"></span><span class="map-pin__stand"><span class="map-pin__label">${isHome(c) ? "★ " : ""}${c.name}</span><span class="map-pin__stick"></span></span>`;
-      // Copperbelt towns sit close together, so a tap picks whichever pin is nearest the finger
-      b.addEventListener("click", e => {
-        if (!e.detail) return select(c, b); // keyboard
-        let best = c, bd = Infinity;
-        for (const o of window.CITIES) {
-          const r = $(".map-pin__base", o._el).getBoundingClientRect();
-          const d = Math.hypot(r.left + r.width / 2 - e.clientX, r.top + r.height / 2 - e.clientY);
-          if (d < bd) { bd = d; best = o; }
-        }
-        select(best, best._el);
-      });
-      pinsWrap.append(b);
-      c._el = b;
-    });
-
-    function select(c, el) {
-      $$(".map-pin", pinsWrap).forEach(p => p.classList.toggle("is-active", p === el));
-      Haptics.fire("medium");
-      card.city.textContent = c.name;
-      card.region.textContent = c.region;
-      const tr = transportFor(c.name, 0), tr2 = transportFor(c.name, 2);
-      const trText = `Transport to you: about ${kw(tr.total)}–${kw(tr2.total)}, depending on where in ${c.name} you are.`;
-      if (isHome(c)) {
-        card.copy.textContent = `${c.name} is in ${base}, Wiza's home area. ${trText}`;
-        route.setAttribute("d", "");
-      } else {
-        const km = Math.round(Math.hypot(c.x - hub.x, c.y - hub.y) * KM_PER_UNIT / 10) * 10;
-        card.copy.textContent = `About ${km} km from Kabwe, and Wiza comes to you. ${trText}`;
-        const mx = (c.x + hub.x) / 2, my = (c.y + hub.y) / 2 - Math.hypot(c.x - hub.x, c.y - hub.y) * 0.3;
-        route.setAttribute("d", `M${hub.x},${hub.y} Q${mx},${my} ${c.x},${c.y}`);
-      }
-      card.book.dataset.town = c.name;
-      // nudge the camera towards the selected town
-      target.rz = -8 + ((c.x / Z.w) - 0.5) * -14;
-      target.rx = 34 + ((c.y / Z.h) - 0.5) * 10;
-    }
-    card.book.addEventListener("click", () => Booking?.setTown(card.book.dataset.town || hub.name));
-
-    // camera: drag to rotate, gyro adds a gentle tilt; children counter-rotate to stand upright
-    const target = { rx: 38, rz: -8 }, cam = { rx: 38, rz: -8 };
-    let dragging = false, sx = 0, sy = 0, srx = 0, srz = 0, lastTick = 0;
-    mapStage.addEventListener("pointerdown", e => {
-      if (e.target.closest(".map-pin")) return;
-      dragging = true; sx = e.clientX; sy = e.clientY; srx = target.rx; srz = target.rz;
-      mapStage.setPointerCapture(e.pointerId);
-    });
-    mapStage.addEventListener("pointermove", e => {
-      if (!dragging) return;
-      target.rz = srz + (e.clientX - sx) * 0.25;
-      target.rx = clamp(srx - (e.clientY - sy) * 0.2, 8, 62);
-      if (performance.now() - lastTick > 90) { Haptics.fire("tick"); lastTick = performance.now(); }
-    });
-    const end = () => { dragging = false; };
-    mapStage.addEventListener("pointerup", end); mapStage.addEventListener("pointercancel", end);
-
-    let visible = false;
-    new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(mapStage);
-    (function loop() {
-      requestAnimationFrame(loop);
-      if (!visible) return;
-      const gx = Gyro.active ? Gyro.x * 10 : 0, gy = Gyro.active ? Gyro.y * 8 : 0;
-      cam.rx = lerp(cam.rx, clamp(target.rx - gy, 8, 64), 0.08);
-      cam.rz = lerp(cam.rz, target.rz + gx, 0.08);
-      plane.style.setProperty("--rx", `${cam.rx}deg`);
-      plane.style.setProperty("--rz", `${cam.rz}deg`);
-    })();
-
-    select(hub, hub._el);
   }
 
   /* ------------------------------------------------------------------------
@@ -803,7 +685,7 @@
       `<optgroup label="Styles">${STYLES.map(i => `<option>${i.name}</option>`).join("")}</optgroup>` +
       `<option>Not sure yet: help me choose</option>`;
     $("[data-look-group]", styleSel).innerHTML = LOOKS.map(l => `<option value="look:${l.id}">${l.title}</option>`).join("");
-    townSel.innerHTML = (window.CITIES || []).map(c => `<option>${c.name}</option>`).join("") + `<option>Elsewhere in Zambia</option>`;
+    townSel.innerHTML = `<option value="">Choose your town</option>` + townNames.map(n => `<option>${n}</option>`).join("") + `<option>Elsewhere in Zambia</option>`;
     const dateIn = form.elements.date;
     dateIn.min = new Date(Date.now() - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
 
@@ -845,21 +727,20 @@
       e.preventDefault();
       const f = form.elements;
       let bad = null;
-      for (const el of [f.name, f.style, f.date]) {
+      for (const el of [f.name, f.style, f.date, f.town]) {
         const wrap = el.closest(".field");
         const empty = !el.value.trim();
         wrap.classList.toggle("is-error", empty);
         if (empty && !bad) bad = el;
       }
-      if (bad) { msg.textContent = "Please add your name, style and date."; Haptics.fire("error"); bad.focus(); return; }
+      if (bad) { msg.textContent = "Please add your name, style, date and town."; Haptics.fire("error"); bad.focus(); return; }
       const consent = f.agree.closest(".consent");
       consent.classList.toggle("is-error", !f.agree.checked);
       if (!f.agree.checked) { msg.textContent = "Please tick the box to agree to the booking terms."; Haptics.fire("error"); f.agree.focus(); return; }
       const style = chosenLook ? `${chosenLook.title} (from the lookbook)` : f.style.value;
       const date = new Date(f.date.value + "T12:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
-      const home = (window.CITIES || []).some(c => c.name === f.town.value && c.region === (SITE.baseProvince || "Central Province"));
       const text = [
-        `Hello Wiza! ✨ I'd love to request an appointment.`,
+        `Hi Wiza, I'd like to book an appointment.`,
         ``,
         `• Name: ${f.name.value.trim()}`,
         `• Style: ${style}`,
@@ -869,7 +750,7 @@
         f.notes.value.trim() ? `• Notes: ${f.notes.value.trim()}` : "",
         ``,
         `I understand a ${SITE.depositPercent || 25}% upfront payment secures my appointment once you confirm.`,
-        home ? "" : `I'm outside ${SITE.baseProvince || "Central Province"}, so I understand transport costs will be added to the final bill.`,
+        `I understand transport costs are added based on my location.`,
       ].filter((l, i, a) => l || (i > 0 && a[i - 1])).join("\n").trim();
       if (!whatsappReady()) {
         msg.textContent = "Online booking opens soon. The WhatsApp number hasn't been added yet.";
@@ -901,7 +782,7 @@
   });
   const waFloat = $("[data-wa-float]");
   if (waFloat && whatsappReady()) {
-    waFloat.href = `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent("Hello Wiza! ✨")}`;
+    waFloat.href = `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent("Hi Wiza")}`;
     waFloat.target = "_blank"; waFloat.rel = "noopener";
   }
 })();

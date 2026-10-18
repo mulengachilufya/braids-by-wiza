@@ -5,12 +5,12 @@ Website for **Braids by Wiza**, a luxury braiding business in Zambia.
 A static site with no build step and no dependencies: open `index.html`, or deploy the folder to any static host (Vercel, Netlify, GitHub Pages).
 
 ## Pages
-- `index.html`: home page. It has the interactive silk hero, signature work, the menu, the style finder, About Wiza, a 3D Zambia map, aftercare, FAQ, and WhatsApp booking.
-- `work.html`: the Lookbook, with all of Wiza's work, filters, and a swipeable lightbox.
+- `index.html`: home page. It has the interactive silk hero, sample work, styles and prices with the price check, the style finder, About Wiza, the mobile service note, aftercare, FAQ, and WhatsApp booking.
+- `work.html`: the gallery, with all of Wiza's work, filters, and a swipeable lightbox.
 
 ## Business details (edit `js/data.js`)
 - WhatsApp: +260 760 877 104 · Calls only: +260 777 091 604
-- Mobile braider, based in Kabwe. Central Province towns are the home area.
+- Shown on the site as a mobile braider, priced by the client's location. Trips are priced from Kabwe (not shown on the site).
 - By appointment only. A 25% upfront payment secures a booking.
 
 ## Price estimate calculator
