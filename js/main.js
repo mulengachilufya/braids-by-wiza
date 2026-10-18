@@ -161,14 +161,14 @@
     if (!sparkleCanvas || reduceMotion) return { burst() {} };
     const ctx = sparkleCanvas.getContext("2d");
     const parts = [];
-    const colors = ["#a0785a", "#5e4333", "#b8607a"];
+    const colors = ["#f4a7c3", "#e8457f", "#f0dcb5", "#ffffff"];
     let dpr = 1, running = false;
     const size = () => { dpr = Math.min(devicePixelRatio || 1, 2); sparkleCanvas.width = innerWidth * dpr; sparkleCanvas.height = innerHeight * dpr; };
     size(); addEventListener("resize", size);
     function add(x, y, n = 1, spread = 1) {
       for (let i = 0; i < n && parts.length < 160; i++) {
         const a = Math.random() * Math.PI * 2, s = (Math.random() * 1.6 + 0.3) * spread;
-        parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 0.4, life: 1, r: Math.random() * 2.2 + 0.8, c: colors[(Math.random() * colors.length) | 0], star: false });
+        parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 0.4, life: 1, r: Math.random() * 2.2 + 0.8, c: colors[(Math.random() * colors.length) | 0], star: Math.random() < 0.35 });
       }
       if (!running) { running = true; requestAnimationFrame(tick); }
     }
@@ -193,6 +193,7 @@
     const trail = (x, y) => { const d = Math.hypot(x - lx, y - ly); if (d > 14) { add(x, y, d > 40 ? 2 : 1, 0.6); lx = x; ly = y; } };
     if (finePointer) addEventListener("pointermove", e => trail(e.clientX, e.clientY), { passive: true });
     addEventListener("touchmove", e => { const t = e.touches[0]; if (t) trail(t.clientX, t.clientY); }, { passive: true });
+    document.addEventListener("click", e => { if (e.target.closest(".btn, .finder__opt, .chip, .menu-item__add, .hair-opt, .seg button")) add(e.clientX, e.clientY, 18, 2.2); });
     return { burst: (x, y, n = 18) => add(x, y, n, 2.2) };
   })();
 
@@ -293,7 +294,7 @@
 
     const grad = () => {
       const g = ctx.createLinearGradient(0, 0, W, H);
-      g.addColorStop(0, "rgba(59,42,32,.30)"); g.addColorStop(0.5, "rgba(160,120,90,.45)"); g.addColorStop(1, "rgba(184,96,122,.30)");
+      g.addColorStop(0, "rgba(244,167,195,.55)"); g.addColorStop(0.5, "rgba(215,180,124,.45)"); g.addColorStop(1, "rgba(232,69,127,.55)");
       return g;
     };
     let strokeGrad = grad(), gw = W;
@@ -322,11 +323,11 @@
 
       // force-field glow
       const glow = ctx.createRadialGradient(P.x, P.y, 0, P.x, P.y, R * 1.3);
-      glow.addColorStop(0, P.active ? "rgba(160,120,90,.18)" : "rgba(160,120,90,.06)");
-      glow.addColorStop(1, "rgba(160,120,90,0)");
+      glow.addColorStop(0, P.active ? "rgba(232,69,127,.22)" : "rgba(232,69,127,.08)");
+      glow.addColorStop(1, "rgba(232,69,127,0)");
       ctx.fillStyle = glow; ctx.fillRect(P.x - R * 1.4, P.y - R * 1.4, R * 2.8, R * 2.8);
       if (P.active) {
-        ctx.strokeStyle = "rgba(59,42,32,.15)"; ctx.lineWidth = 1;
+        ctx.strokeStyle = "rgba(240,220,181,.35)"; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.arc(P.x, P.y, R * (0.55 + Math.sin(t * 6) * 0.04), 0, 7); ctx.stroke();
       }
 
@@ -659,7 +660,7 @@
           <h3>${best.title}</h3>
           <p>${best.note}</p>
           <div class="finder__actions">
-            <a class="btn btn--dark btn--sm" href="#book" data-finder-book>Book this style</a>
+            <a class="btn btn--pink btn--sm" href="#book" data-finder-book>Book this style</a>
             <button type="button" class="btn btn--outline btn--sm" data-finder-again>Start again</button>
           </div>
         </div>`;
